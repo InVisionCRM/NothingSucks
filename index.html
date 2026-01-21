@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black selection:bg-white/5 selection:text-white/10">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Void</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --mouse-x: 50vw;
+        --mouse-y: 50vh;
+        --beam-size: 320px;
+        --beam-color: rgba(255, 255, 255, 1);
+      }
+      
+      /* Large circular mask for the flashlight effect */
+      .flashlight-mask {
+        mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="black"/></svg>');
+        mask-size: var(--beam-size) var(--beam-size);
+        mask-repeat: no-repeat;
+        mask-position: calc(var(--mouse-x) - (var(--beam-size) / 2)) calc(var(--mouse-y) - (var(--beam-size) / 2));
+        
+        -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="black"/></svg>');
+        -webkit-mask-size: var(--beam-size) var(--beam-size);
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: calc(var(--mouse-x) - (var(--beam-size) / 2)) calc(var(--mouse-y) - (var(--beam-size) / 2));
+        
+        /* Blur effect removed as per request */
+        filter: none;
+      }
+
+      /* Volumetric circular beam */
+      .flashlight-beam {
+        position: absolute;
+        width: var(--beam-size);
+        height: var(--beam-size);
+        left: var(--mouse-x);
+        top: var(--mouse-y);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 10;
+        filter: blur(40px); /* Static blur for light dispersion */
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at center,
+          var(--beam-color) 0%,
+          rgba(255, 255, 255, 0.2) 25%,
+          rgba(255, 255, 255, 0.05) 60%,
+          transparent 90%
+        );
+      }
+
+      .flashlight-ambient {
+        position: absolute;
+        width: calc(var(--beam-size) * 3);
+        height: calc(var(--beam-size) * 3);
+        left: var(--mouse-x);
+        top: var(--mouse-y);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 9;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at center,
+          var(--beam-color) 0%,
+          rgba(255, 255, 255, 0.02) 40%,
+          transparent 80%
+        );
+        opacity: 0.15;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+  <body class="bg-black m-0 p-0 selection:bg-white/5 selection:text-white/10 overflow-hidden h-full">
+    <div id="root"></div>
+  </body>
+</html>
