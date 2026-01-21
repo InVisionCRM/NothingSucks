@@ -4,15 +4,14 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 /**
  * The Dark Secret - Joke Website
  * Minimalist version:
- * - "Nothing..." text minimized to 5px and moved to bottom-left.
+ * - "Nothing" text at 25px in the center.
+ * - Text becomes transparent on hover.
+ * - Clicking copies "Nothing Pasted" to clipboard and shows "Nothing Copied" toast.
  * - Vertical scroll: Color cycling.
- * - Blur effects removed.
  */
 
-const SECRET_TEXT = "0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39";
-
 const App: React.FC = () => {
-  const [copied, setCopied] = useState(false);
+  const [showToastCenter, setShowToastCenter] = useState(false);
 
   // Position tracking
   const mousePos = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
@@ -34,7 +33,7 @@ const App: React.FC = () => {
     document.documentElement.style.setProperty('--mouse-x', `${currentPos.current.x}px`);
     document.documentElement.style.setProperty('--mouse-y', `${currentPos.current.y}px`);
 
-    // Color shifting (Vertical Scroll controls color now)
+    // Color shifting (Vertical Scroll controls color)
     const hue = Math.abs(virtualColor.current * COLOR_SENSITIVITY) % 360;
     document.documentElement.style.setProperty('--beam-color', `hsla(${hue}, 100%, 75%, 1)`);
 
@@ -53,7 +52,6 @@ const App: React.FC = () => {
   }, []);
 
   const handleWheel = useCallback((e: WheelEvent) => {
-    // Vertical wheel now changes colors again
     virtualColor.current += e.deltaY;
   }, []);
 
@@ -66,10 +64,18 @@ const App: React.FC = () => {
     };
   }, [handleMouseMove, handleWheel]);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(SECRET_TEXT);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copyJokeText = async () => {
+    try {
+      await navigator.clipboard.writeText("Nothing Pasted");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  };
+
+  const handleCenterClick = () => {
+    copyJokeText();
+    setShowToastCenter(true);
+    setTimeout(() => setShowToastCenter(false), 2000);
   };
 
   return (
@@ -82,34 +88,36 @@ const App: React.FC = () => {
 
       {/* Hidden Content Layer */}
       <div className="flashlight-mask fixed inset-0 pointer-events-none z-40">
-        {/* "Nothing..." positioned bottom left, 5px font size */}
-        <div className="absolute bottom-4 left-4 pointer-events-auto">
-          <div className="relative flex flex-col items-start">
+        
+        {/* "Nothing" positioned center screen, moved up by 30px */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[-30px] pointer-events-auto">
+          <div className="relative flex flex-col items-center">
             <span 
-              onClick={handleCopy}
-              className="text-white font-mono cursor-pointer transition-opacity hover:opacity-80 active:scale-95"
+              onClick={handleCenterClick}
+              className="text-white font-mono cursor-pointer transition-opacity duration-300 hover:opacity-0 active:scale-95"
               style={{
-                fontSize: '5px',
+                fontSize: '25px',
                 letterSpacing: '0.05em',
               }}
             >
-              Nothing...
+              Nothing
             </span>
             
-            {copied && (
-              <div className="absolute left-0 -top-8 whitespace-nowrap">
-                <span className="text-[10px] text-white font-mono uppercase tracking-widest bg-white/10 px-2 py-1 rounded backdrop-blur-sm">
-                  Copied
+            {showToastCenter && (
+              <div className="absolute left-1/2 -top-12 -translate-x-1/2 whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <span className="text-[12px] text-white font-mono uppercase tracking-[0.2em] bg-white/10 px-4 py-2 rounded border border-white/20 backdrop-blur-md">
+                  Nothing Copied
                 </span>
               </div>
             )}
           </div>
         </div>
+
       </div>
 
       {/* Atmospheric noise overlay */}
       <div 
-        className="fixed inset-0 opacity-[0.08] pointer-events-none mix-blend-overlay z-10"
+        className="fixed inset-0 opacity-[0.06] pointer-events-none mix-blend-overlay z-10"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`
         }}
