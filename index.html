@@ -12,25 +12,24 @@
         --mouse-y: 50vh;
         --beam-size: 320px;
         --beam-color: rgba(255, 255, 255, 1);
+        /* Base64 encoded circle mask for absolute compatibility */
+        --mask-url: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMDAgMjAwIj48Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjgwIiBmaWxsPSJibGFjayIvPjwvc3ZnPg==');
       }
       
-      /* Large circular mask for the flashlight effect */
       .flashlight-mask {
-        mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="black"/></svg>');
+        mask-image: var(--mask-url);
         mask-size: var(--beam-size) var(--beam-size);
         mask-repeat: no-repeat;
         mask-position: calc(var(--mouse-x) - (var(--beam-size) / 2)) calc(var(--mouse-y) - (var(--beam-size) / 2));
         
-        -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="black"/></svg>');
+        -webkit-mask-image: var(--mask-url);
         -webkit-mask-size: var(--beam-size) var(--beam-size);
         -webkit-mask-repeat: no-repeat;
         -webkit-mask-position: calc(var(--mouse-x) - (var(--beam-size) / 2)) calc(var(--mouse-y) - (var(--beam-size) / 2));
         
-        /* Blur effect removed as per request */
         filter: none;
       }
 
-      /* Volumetric circular beam */
       .flashlight-beam {
         position: absolute;
         width: var(--beam-size);
@@ -39,8 +38,8 @@
         top: var(--mouse-y);
         transform: translate(-50%, -50%);
         pointer-events: none;
-        z-index: 10;
-        filter: blur(40px); /* Static blur for light dispersion */
+        z-index: 50;
+        filter: blur(40px);
         border-radius: 50%;
         background: radial-gradient(
           circle at center,
@@ -59,7 +58,7 @@
         top: var(--mouse-y);
         transform: translate(-50%, -50%);
         pointer-events: none;
-        z-index: 9;
+        z-index: 49;
         border-radius: 50%;
         background: radial-gradient(
           circle at center,

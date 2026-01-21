@@ -13,13 +13,11 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 const App: React.FC = () => {
   const [showToastCenter, setShowToastCenter] = useState(false);
 
-  // Position tracking
+  // Initial position at center of screen
   const mousePos = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const currentPos = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   
-  // Virtual tracking for color
   const virtualColor = useRef(0);
-  
   const requestRef = useRef<number>(null);
 
   const LERP_FACTOR = 0.15;
@@ -30,12 +28,13 @@ const App: React.FC = () => {
     currentPos.current.x += (mousePos.current.x - currentPos.current.x) * LERP_FACTOR;
     currentPos.current.y += (mousePos.current.y - currentPos.current.y) * LERP_FACTOR;
 
-    document.documentElement.style.setProperty('--mouse-x', `${currentPos.current.x}px`);
-    document.documentElement.style.setProperty('--mouse-y', `${currentPos.current.y}px`);
+    // Apply to :root
+    const root = document.documentElement;
+    root.style.setProperty('--mouse-x', `${currentPos.current.x}px`);
+    root.style.setProperty('--mouse-y', `${currentPos.current.y}px`);
 
-    // Color shifting (Vertical Scroll controls color)
     const hue = Math.abs(virtualColor.current * COLOR_SENSITIVITY) % 360;
-    document.documentElement.style.setProperty('--beam-color', `hsla(${hue}, 100%, 75%, 1)`);
+    root.style.setProperty('--beam-color', `hsla(${hue}, 100%, 75%, 1)`);
 
     requestRef.current = requestAnimationFrame(animate);
   }, []);
