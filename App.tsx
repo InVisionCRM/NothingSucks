@@ -6,21 +6,27 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
  * Minimalist version:
  * - "Nothing" text at 25px in the center.
  * - Text becomes transparent on hover.
- * - Clicking copies "Nothing Pasted" to clipboard and shows "Nothing Copied" toast.
+ * - Clicking copies "Nothing Pasted" to clipboard.
+ * - Click triggers a cinematic beam expansion and screen whiteout with "Nothing Copied" text.
  * - Vertical scroll: Color cycling.
  */
 
 const App: React.FC = () => {
-  const [showToastCenter, setShowToastCenter] = useState(false);
+  const [isExploded, setIsExploded] = useState(false);
 
   // Initial position at center of screen
   const mousePos = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   const currentPos = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   
+  // Beam size animation state
+  const currentBeamSize = useRef(320);
+  const targetBeamSize = useRef(320);
+  
   const virtualColor = useRef(0);
   const requestRef = useRef<number | null>(null);
 
   const LERP_FACTOR = 0.15;
+  const SIZE_LERP_FACTOR = 0.08; // Control the speed of the expansion
   const COLOR_SENSITIVITY = 0.5;
 
   const animate = useCallback(() => {
@@ -28,10 +34,14 @@ const App: React.FC = () => {
     currentPos.current.x += (mousePos.current.x - currentPos.current.x) * LERP_FACTOR;
     currentPos.current.y += (mousePos.current.y - currentPos.current.y) * LERP_FACTOR;
 
+    // Smoothen beam size
+    currentBeamSize.current += (targetBeamSize.current - currentBeamSize.current) * SIZE_LERP_FACTOR;
+
     // Apply to :root
     const root = document.documentElement;
     root.style.setProperty('--mouse-x', `${currentPos.current.x}px`);
     root.style.setProperty('--mouse-y', `${currentPos.current.y}px`);
+    root.style.setProperty('--beam-size', `${currentBeamSize.current}px`);
 
     const hue = Math.abs(virtualColor.current * COLOR_SENSITIVITY) % 360;
     root.style.setProperty('--beam-color', `hsla(${hue}, 100%, 75%, 1)`);
@@ -83,8 +93,16 @@ const App: React.FC = () => {
 
   const handleCenterClick = () => {
     copyJokeText();
-    setShowToastCenter(true);
-    setTimeout(() => setShowToastCenter(false), 2000);
+    setIsExploded(true);
+    
+    // Expand beam dramatically to cover the screen
+    targetBeamSize.current = Math.max(window.innerWidth, window.innerHeight) * 3;
+
+    setTimeout(() => {
+      setIsExploded(false);
+      // Contract beam back to normal
+      targetBeamSize.current = 320;
+    }, 2500);
   };
 
   return (
@@ -95,30 +113,52 @@ const App: React.FC = () => {
         <div className="flashlight-beam"></div>
       </div>
 
+      {/* Whiteout Overlay */}
+      <div 
+        className={`fixed inset-0 z-[100] bg-white flex items-center justify-center transition-opacity duration-700 ${isExploded ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+      >
+        <span className="text-black font-mono text-sm tracking-[0.2em] uppercase">
+          Nothing Copied
+        </span>
+      </div>
+
       {/* Hidden Content Layer */}
       <div className="flashlight-mask fixed inset-0 pointer-events-none z-40">
         
         {/* "Nothing" positioned center screen, moved up by 30px */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-[-30px] pointer-events-auto">
           <div className="relative flex flex-col items-center">
-            <span 
-              onClick={handleCenterClick}
-              className="text-white font-mono cursor-pointer transition-opacity duration-300 hover:opacity-0 active:scale-95"
-              style={{
-                fontSize: '25px',
-                letterSpacing: '0.05em',
-              }}
-            >
-              Nothing
-            </span>
             
-            {showToastCenter && (
-              <div className="absolute left-1/2 -top-12 -translate-x-1/2 whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <span className="text-[12px] text-white font-mono uppercase tracking-[0.2em] bg-white/10 px-4 py-2 rounded border border-white/20 backdrop-blur-md">
-                  Nothing Copied
-                </span>
-              </div>
-            )}
+            {/* Wrapper for bigger hit/disappear area */}
+            <div 
+              onClick={handleCenterClick}
+              className="group p-24 -m-20 cursor-pointer flex items-center justify-center"
+            >
+              <span 
+                className="text-white font-mono transition-opacity duration-300 group-hover:opacity-0 active:scale-95"
+                style={{
+                  fontSize: '25px',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                Nothing
+              </span>
+            </div>
+            
+            {/* Hint with animated arrow */}
+            <div className="mt-8 flex flex-col items-center opacity-60 pointer-events-none">
+              <svg 
+                className="w-4 h-4 text-white animate-bounce mb-2" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              <span className="text-[10px] text-white font-mono tracking-widest uppercase">
+                (Copy Nothing)
+              </span>
+            </div>
           </div>
         </div>
 
