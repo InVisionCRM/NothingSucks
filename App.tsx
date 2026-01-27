@@ -18,7 +18,7 @@ const App: React.FC = () => {
   const currentPos = useRef({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
   
   const virtualColor = useRef(0);
-  const requestRef = useRef<number>(null);
+  const requestRef = useRef<number | null>(null);
 
   const LERP_FACTOR = 0.15;
   const COLOR_SENSITIVITY = 0.5;
@@ -42,7 +42,7 @@ const App: React.FC = () => {
   useEffect(() => {
     requestRef.current = requestAnimationFrame(animate);
     return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      if (requestRef.current !== null) cancelAnimationFrame(requestRef.current);
     };
   }, [animate]);
 
