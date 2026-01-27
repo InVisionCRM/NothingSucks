@@ -50,18 +50,28 @@ const App: React.FC = () => {
     mousePos.current = { x: e.clientX, y: e.clientY };
   }, []);
 
+  const handleTouch = useCallback((e: TouchEvent) => {
+    if (e.touches.length > 0) {
+      mousePos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+  }, []);
+
   const handleWheel = useCallback((e: WheelEvent) => {
     virtualColor.current += e.deltaY;
   }, []);
 
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('touchmove', handleTouch, { passive: true });
+    window.addEventListener('touchstart', handleTouch, { passive: true });
     window.addEventListener('wheel', handleWheel, { passive: true });
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouch);
+      window.removeEventListener('touchstart', handleTouch);
       window.removeEventListener('wheel', handleWheel);
     };
-  }, [handleMouseMove, handleWheel]);
+  }, [handleMouseMove, handleWheel, handleTouch]);
 
   const copyJokeText = async () => {
     try {
@@ -78,7 +88,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-screen bg-[#000000] cursor-none overflow-hidden select-none">
+    <div className="relative w-full h-screen bg-[#000000] cursor-none overflow-hidden select-none touch-none">
       {/* Visual Flashlight Beam Layers */}
       <div className="fixed inset-0 pointer-events-none z-50">
         <div className="flashlight-ambient"></div>
